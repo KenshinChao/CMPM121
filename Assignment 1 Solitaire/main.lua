@@ -20,7 +20,11 @@ function love.load()
   
   cardTable = {}
   
-  table.insert(cardTable, CardClass:new(screenWidth/2, screenHeight/2, 50,100, "clove", 5))
+  table.insert(cardTable, CardClass:new(screenWidth/2, screenHeight/2, 50,100, "Hearts", 5))
+  
+   table.insert(cardTable, CardClass:new(screenWidth/2, screenHeight/2 + 50, 50,100, "Spades", 11))
+  
+    table.insert(cardTable, CardClass:new(screenWidth/2, screenHeight/2 + 100, 50,100, "Back Blue", 1))
   
   --print(cardTable)
 end
@@ -42,11 +46,13 @@ function love.draw()
 end
 
 function love.mousepressed(x, y, button)
-  if button == 1 then 
+  if button == 1 and draggingCard == nil then 
     for i, card in ipairs(cardTable) do
       if card:isClicked(x, y) then
         card.selected = true
         draggingCard = card
+        table.remove(cardTable,i)
+        table.insert(cardTable,card)
       end
     end
   end
