@@ -9,14 +9,25 @@ require "grabber"
 objectHeld = nil
 
 function love.load()
+  
   love.window.setMode(960, 640) 
   love.graphics.setBackgroundColor(0, 0.7, 0.2, 1)
   grabber = GrabberClass:new()
+  deck = {} 
+  
+  for i = 1,8 do
+     table.insert(deck, CardClass:new(20,20))
+  end
+  
+  
+  
   cardTable = {}
+  
+  
   
   table.insert(cardTable, CardClass:new(100,100))
   
-   table.insert(cardTable, CardClass:new(150,150))
+  table.insert(cardTable, CardClass:new(150,150))
   
   
   
@@ -30,11 +41,17 @@ function love.update()
    for _, card in ipairs(cardTable) do
     card:update() -- or card.draw(card)
   end
+  for _, a in pairs(deck) do
+    a:update() -- or card.draw(card)
+  end
 end
 
 function love.draw()
   for _, card in ipairs(cardTable) do
     card:draw() -- or card.draw(card)
+  end
+    for _, a in pairs(deck) do
+    a:draw() -- or card.draw(card)
   end
   
   love.graphics.setColor(1,1,1,1)
@@ -53,6 +70,18 @@ function checkForMouseMoving()
     card:checkForMouseOver(grabber)
     if card.state == 1 and grabber.heldObject == nil then
       if love.mouse.isDown(1) then
+        grabber.heldObject = card
+        print("card grabbed: ")
+        
+      end
+    end
+    
+  end
+   for _, card in ipairs(deck) do
+    card:checkForMouseOver(grabber)
+    if card.state == 1 and grabber.heldObject == nil then
+      if love.mouse.isDown(1) then
+        --local newCard = card
         grabber.heldObject = card
         print("card grabbed: ")
         
