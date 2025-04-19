@@ -12,3 +12,5 @@ Something I could've done better was utilize Type Object, because I know that th
 
 
 The game should work for general play. Only thing is that you cannot pick up multiple cards and you will have to drag the card you want to place over the first card in that pile/tableau.
+
+Used https://codebeautify.org/lua-beautifier to format spacing.
