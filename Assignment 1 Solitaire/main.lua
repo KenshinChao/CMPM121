@@ -10,12 +10,12 @@ require "cardPile"
 
 
 lastObjectHeld = nil
+previousPile = nil
 
 function love.load()
   love.window.setMode(960, 640) 
   love.graphics.setBackgroundColor(0, 0.7, 0.2, 1)
   grabber = GrabberClass:new()
-  cardTable = {}
   drawPile = CardPile:new(100,180)
   
   deck = DeckClass:new(100,100)
@@ -28,7 +28,16 @@ function love.load()
   tableau5 = CardPile:new(450,180)
   tableau6 = CardPile:new(520,180)
   tableau7 = CardPile:new(590,180)
-
+  
+  AceClubs = CardPile:new(660,100,"Clubs 1.png")
+  AceDiamond = CardPile:new(730,100,"Diamond 1.png")
+  AceSpade = CardPile:new(790,100,"Spades 1.png" )
+  AceHeart = CardPile:new(850,100,"Hearts 1.png")
+  
+  AceClubs.ace = true
+  AceDiamond.ace = true
+  AceSpade.ace = true
+  AceHeart.ace = true
   tableaus = {tableau1, tableau2, tableau3, tableau4, tableau5, tableau6, tableau7}
   populateTableaus(tableaus, deck)
   
@@ -46,27 +55,26 @@ function love.update()
     --print(drawPile.cards[#drawPile.cards])
     --print(drawPile[#drawPile].isDraggable)
   end
-   
-   for _, card in ipairs(cardTable) do
-    card:update() -- or card.draw(card)
-  end
+
   for _, card in ipairs(drawPile.cards) do
     card:update() -- or card.draw(card)
   end
   
   for i, table in ipairs(tableaus) do
+    if #table.cards > 0 then
+      table.cards[#table.cards].flipped = false
+    end
+    
     for _,card in ipairs(table.cards) do
       card:update()
     end
     
   end
   
+  
 end
 
 function love.draw()
-  for _, card in ipairs(cardTable) do
-    card:draw() -- or card.draw(card)
-  end
   --for i, card in ipairs(drawPile) do
     --print(i)
   --  if card ~= grabber.heldObject then
@@ -83,7 +91,10 @@ function love.draw()
   tableau5:draw()
   tableau6:draw()
   tableau7:draw()
-  
+  AceClubs:draw()
+  AceDiamond:draw()
+  AceHeart:draw()
+  AceSpade:draw()
   
   deck:draw()
   
@@ -91,8 +102,8 @@ function love.draw()
     grabber.heldObject:draw()
   end
   love.graphics.setColor(1,1,1,1)
-  love.graphics.print("Mouse: " .. tostring(grabber.currentMousePos.x) .. ", " .. 
-    tostring(grabber.currentMousePos.y))
+  --love.graphics.print("Mouse: " .. tostring(grabber.currentMousePos.x) .. ", " .. 
+    --tostring(grabber.currentMousePos.y))
   
 end
 
@@ -124,6 +135,7 @@ function checkForMouseMoving()
         topCard.isDraggable = true
         topCard.flipped = false
         if love.mouse.isDown(1) then
+          previousPile = tableau
           grabber.heldObject = topCard
           lastObjectHeld = topCard
           topCard.state = 2  -- Set the card's state to "grabbed"
@@ -141,6 +153,10 @@ function checkForMouseMoving()
   tryDropCardOnPile(grabber.heldObject,tableau5)
   tryDropCardOnPile(grabber.heldObject,tableau6)
   tryDropCardOnPile(grabber.heldObject,tableau7)
+  tryDropCardOnPile(grabber.heldObject,AceClubs)
+  tryDropCardOnPile(grabber.heldObject,AceDiamond)
+  tryDropCardOnPile(grabber.heldObject,AceHeart)
+  tryDropCardOnPile(grabber.heldObject,AceSpade)
   
   lastObjectHeld = nil
   end
@@ -153,6 +169,7 @@ function checkForMouseMoving()
         --print(drawPile[#drawPile].isDraggable)
         grabber.heldObject = card
         lastObjectHeld = card
+        previousPile = drawPile
         card.state = 2
         print("card grabbed")
         --print(card)
@@ -171,19 +188,54 @@ function tryDropCardOnPile(card, pile)
     --print("grabber isn't nil")
     local card = lastObjectHeld
   if pile.state == 1 then
-    if #pile.cards > 0 then
+    if #pile.cards > 0 then --cards exist in pile already
       local topCard = pile.cards[#pile.cards]
-      if card.number == topCard.number - 1 then
+      if pile.ace == true then
+        if card.number == topCard.number + 1 then
         table.insert(pile.cards, card)
-        table.remove(drawPile.cards, #drawPile.cards)
+        if previousPile ~= nil then
+        table.remove(previousPile.cards, #previousPile.cards)
+        end
+      end
+      elseif card.number == topCard.number - 1 then
+        table.insert(pile.cards, card)
+        if previousPile ~= nil then
+        table.remove(previousPile.cards, #previousPile.cards)
+        end
         print("Card added to pile")
-      else
+      else --is not 1 less.
         print("Must drop one lower")
       end
-    else
+    else --there is no cards in. #pile.cards = 0
       print("tried to add it")
+      if pile.string == "Clubs 1.png" then
+        if card.number == 1 and card.suit == "Clubs" then 
+          table.insert(pile.cards, card)
+          table.remove(previousPile.cards, #previousPile.cards)
+        end
+        
+      elseif pile.string == "Hearts 1.png" then
+        if card.number == 1 and card.suit == "Hearts" then 
+          table.insert(pile.cards, card)
+          table.remove(previousPile.cards, #previousPile.cards)
+        end
+      
+    elseif pile.string == "Spades 1.png" then
+      if card.number == 1 and card.suit == "Spades" then 
+          table.insert(pile.cards, card)
+          table.remove(previousPile.cards, #previousPile.cards)
+        end
+    
+    elseif pile.string == "Diamond 1.png" then
+      if card.number == 1 and card.suit == "Diamond" then 
+          table.insert(pile.cards, card)
+          table.remove(previousPile.cards, #previousPile.cards)
+        end
+      
+      elseif card.number == 13 then
       table.insert(pile.cards, card)
-      table.remove(drawPile.cards, #drawPile.cards)
+      table.remove(previousPile.cards, #previousPile.cards)
+      end
     end
     lastObjectHeld = nil
   end

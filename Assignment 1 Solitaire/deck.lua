@@ -40,7 +40,7 @@ end
 
 function DeckClass:draw()
   love.graphics.draw(self.image, self.position.x, self.position.y, 0, 1/2, 1/2)
-    love.graphics.print(tostring(self.state), self.position.x + 20, self.position.y - 20)
+    love.graphics.print("Click To Draw", self.position.x + 20, self.position.y - 20)
   
 end
 
@@ -85,7 +85,7 @@ function DeckClass:drawThreeCards(drawPile)
     
     table.insert(drawPile.cards, table.remove(self.cards)) -- take from end of deck
   end
-  print("finished draw 3 function" .. #drawPile)
+  --print("finished draw 3 function" .. #drawPile)
   return drawPile
 end
 

@@ -10,7 +10,7 @@ PILE_STATE = {
   MOUSE_OVER = 1
 }
 
-function CardPile:new(xPos, yPos)
+function CardPile:new(xPos, yPos, image)
   local pile = {
     cards = {}
     }
@@ -25,12 +25,17 @@ function CardPile:new(xPos, yPos)
 
 }
   pile.state = PILE_STATE.IDLE
-
+  pile.string = image
   setmetatable(pile, metadata)
   pile.image = love.graphics.newImage("images/Back Blue 2.png")
   pile.position = Vector(xPos, yPos)
   pile.size = Vector(50, 70)
   pile.isDraggable = false
+  pile.ace = false
+  
+  if (image ~= nil) then
+  pile.image = love.graphics.newImage("images/" .. image)
+end
   return pile
 end
 
@@ -38,8 +43,15 @@ end
 
 function CardPile:draw()
    --love.graphics.draw(self.image, self.position.x, self.position.y, 0, 1/2, 1/2)
+ 
+   
   love.graphics.rectangle("fill", self.position.x, self.position.y, 50, 70)
-   love.graphics.print(tostring(self.state), self.position.x + 20, self.position.y - 20)
+  --love.graphics.print(tostring(self.state), self.position.x + 20, self.position.y - 20)
+    if self.ace == true then
+      love.graphics.setColor(1, 1, 1, 0.5)  -- Red, Green, Blue, Alpha (opacity)
+    love.graphics.draw(self.image,self.position.x, self.position.y, 0, 1/2, 1/2)
+     love.graphics.setColor(1, 1, 1, 1)
+   end
   if #self.cards > 0 then
   for i,card in ipairs(self.cards) do
     --print(card)

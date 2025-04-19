@@ -52,7 +52,7 @@ function CardClass:draw()
   love.graphics.setColor(1, 1, 1, 1)
   love.graphics.rectangle("fill", self.position.x, self.position.y, self.size.x, self.size.y, 6, 6)
   
-  love.graphics.print(tostring(self.state), self.position.x + 20, self.position.y - 20)
+  --love.graphics.print(tostring(self.state), self.position.x + 20, self.position.y - 20)
   if self.flipped == true then
     love.graphics.draw(flipped_img,self.position.x, self.position.y, 0, 1/2, 1/2)
   else

@@ -1,7 +1,7 @@
 Card Art by Sylly.
 https://opengameart.org/content/cards-set 
 
-Some base structures by Professor Zac.
+Some base structures by Professor Zac. Vector by Zac.
 
 I utilized State machines for the card/piles states so that I can choose when to interact with them and the grabber. Also helped with debugging.
 
