@@ -4,11 +4,25 @@ require "cardClass"
 
 DeckClass = {}
 
+SUITS = {
+    SPADES = "Spades",
+    HEARTS = "Hearts",
+    CLUBS = "Clubs",
+    DIAMONDS = "Diamond"
+}
+
+COLORS = {
+    RED = "red",
+    BLACK = "black"
+}
+
 DECK_STATE = {
     IDLE = 0,
     MOUSE_OVER = 1,
     GRABBED = 2
 }
+
+drawing = false --used as a check for grabber to not rapidly draw cards again.
 
 function DeckClass:new(xPos, yPos)
     local deck = {
@@ -57,11 +71,9 @@ end
 function DeckClass:update()
 end
 
-function DeckClass:drawThreeCards(drawPile)
-    --print(self)
 
-    --print("after shuffle")
-    --print(self)
+function DeckClass:drawThreeCards(drawPile)
+
     if #drawPile.cards > 0 then
         for _, card in ipairs(drawPile.cards) do
             table.insert(self.cards, card) -- Add the card back to the deck
@@ -83,32 +95,27 @@ end
 
 function DeckClass:generateDeck()
     local deck = {}
-    local suits = {"Spades", "Hearts", "Clubs", "Diamond"}
-    local colors = {
-        Spades = "black",
-        Clubs = "black",
-        Hearts = "red",
-        Diamond = "red"
+    local suits = {SUITS.SPADES, SUITS.HEARTS, SUITS.CLUBS, SUITS.DIAMONDS}
+    local suitColors = {
+        [SUITS.SPADES] = COLORS.BLACK,
+        [SUITS.CLUBS] = COLORS.BLACK,
+        [SUITS.HEARTS] = COLORS.RED,
+        [SUITS.DIAMONDS] = COLORS.RED
     }
 
     for _, suit in ipairs(suits) do
         for value = 1, 13 do
-            table.insert(deck, CardClass:new(0, 0, colors[suit], suit, value, false, false))
+          local color = suitColors[suit]
+          local card = CardClass:new(0, 0, color, suit, value, false, false)
+          table.insert(deck, card)
         end
     end
 
     return deck
 end
 
---[[
-function DeckClass:shuffleDeck()
-      print(#self.cards .. "number of cards")
-  for i = #self.cards, 2, -1 do
 
-    local j = love.math.random(i)
-    self.cards[i], self.cards[j] = self.cards[j],self.cards[i]
-  end
-end--]]
+
 function DeckClass:shuffleDeck()
     local cardCount = #self.cards
     for i = 1, cardCount do
