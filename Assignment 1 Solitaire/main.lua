@@ -85,10 +85,15 @@ function love.draw()
     end
     deck:draw()
 
-    if grabber.heldObject then
+  if grabber.heldObject then
+    if type(grabber.heldObject) == "table" and grabber.heldObject[1] and grabber.heldObject[1].draw then
+        for _, card in ipairs(grabber.heldObject) do
+            card:draw()
+        end
+    elseif grabber.heldObject.draw then
         grabber.heldObject:draw()
     end
-    
+end
     
         
     love.graphics.setColor(0.2, 0.2, 0.2, 1) 

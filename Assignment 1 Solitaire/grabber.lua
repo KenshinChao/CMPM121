@@ -1,5 +1,3 @@
--- Updated grabber.lua with full grabber logic from main.lua and enhanced grab logic
-
 require "vector"
 
 GrabberClass = {}
@@ -108,7 +106,6 @@ function GrabberClass:release(drawPile, tableaus, acePiles, deck)
         card.position = Vector(self.heldObjectOriginalPos.x, self.heldObjectOriginalPos.y)
     end
 
-    -- Unflip the previous card in source pile if it exists and is flipped
     if self.heldObjectSourcePile and #self.heldObjectSourcePile.cards > 0 then
         local lastCard = self.heldObjectSourcePile.cards[#self.heldObjectSourcePile.cards]
         if lastCard.flipped then
