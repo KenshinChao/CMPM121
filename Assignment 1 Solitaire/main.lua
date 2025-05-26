@@ -8,6 +8,8 @@ require "grabber"
 require "deck"
 require "cardPile"
 
+
+
 resetButton = {
     x = 20,
     y = 20,
@@ -21,7 +23,7 @@ resetButton = {
 function love.load()
     love.window.setMode(960, 640)
     love.graphics.setBackgroundColor(0, 0.7, 0.2, 1)
-    
+    love.window.setTitle("SolitaireKenshin")
     grabber = GrabberClass:new()
     drawPile = CardPile:new(100, 180)
     deck = DeckClass:new(100, 100)
