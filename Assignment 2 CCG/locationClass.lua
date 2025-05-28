@@ -13,41 +13,50 @@ end
 
 function Location:draw(index, staged1, staged2)
   local screenWidth = love.graphics.getWidth()
-  local screenHeight = love.graphics.getHeight()
-  local totalLocations = 3
-
-  local locationWidth = 150
-  local locationHeight = 100
-  local spacing = (screenWidth - totalLocations * locationWidth) / (totalLocations + 1)
-
-  local x = spacing * index + locationWidth * (index - 1)
-  local y = screenHeight / 2 - locationHeight / 2
-
+  local spacing = screenWidth / 4
+  local x = spacing * index - 100
+  local y = 300
   self.x = x
   self.y = y
 
-  -- Draw location box
   love.graphics.setColor(0.85, 0.9, 1)
-  love.graphics.rectangle("fill", x, y, locationWidth, locationHeight, 10, 10)
+  love.graphics.rectangle("fill", x, y, 200, 150, 12, 12)
   love.graphics.setColor(0, 0, 0)
-  love.graphics.rectangle("line", x, y, locationWidth, locationHeight, 10, 10)
-  love.graphics.printf(self.name, x, y + 5, locationWidth, "center")
+  love.graphics.rectangle("line", x, y, 200, 150, 12, 12)
+
+  -- Centered location name
+  love.graphics.setColor(0, 0, 0)
+  love.graphics.setFont(love.graphics.newFont(14))
+  love.graphics.printf(self.name, x, y + 75, 200, "center")
+
+  -- Power calculations
+  local function totalPower(cards)
+    local sum = 0
+    for _, c in ipairs(cards) do sum = sum + c.power end
+    return sum
+  end
+
+  local p1Power = totalPower(staged1 or {})
+  local p2Power = totalPower(staged2 or {})
+
+  -- Display inside box: top for AI, bottom for Player
+  if game.phase == "reveal" then
+  love.graphics.printf("P2: " .. p2Power, x + 10, y + 30, 180, "center")   -- AI power
+  else
+  love.graphics.printf("P2: " .. 0, x + 10, y + 30, 180, "center")   -- AI power
+  end
+
+  love.graphics.printf("P1: " .. p1Power, x + 10, y + 120, 180, "center")  -- Player power
+
+  -- Draw cards
   local function drawGrid(cards, playerIndex)
     for i, card in ipairs(cards) do
       local col = (i - 1) % 2
       local row = math.floor((i - 1) / 2)
-      local cardWidth = 70
-      local cardHeight = 100
-      local cardX = x + 5 + col * (cardWidth + 5)
-      local cardY
-
-      if playerIndex == 1 then
-        -- Player cards closer just below the location box
-        cardY = y + locationHeight + 5 + row * (cardHeight + 5)
-      else
-        -- AI cards closer just above the location box
-        cardY = y - cardHeight - 5 - row * (cardHeight + 5)
-      end
+      local cardX = x + 10 + col * 90
+      local cardY = (playerIndex == 1)
+        and (y + 160 + row * 140)
+        or  (y - 160 - row * 140)
 
       card.x = cardX
       card.y = cardY
@@ -58,6 +67,8 @@ function Location:draw(index, staged1, staged2)
   drawGrid(staged1 or {}, 1)
   drawGrid(staged2 or {}, 2)
 end
+
+
 
 function Location:isInside(mx, my)
   return mx > self.x and mx < self.x + 200 and my > self.y and my < self.y + 150

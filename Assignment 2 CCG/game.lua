@@ -22,6 +22,7 @@ function Game:new(p1, p2)
     Location:new("Sky Temple"),
     Location:new("Void Nexus")
   }
+  game.timer = 0
   return game
 end
 
@@ -70,48 +71,69 @@ end
 
 function Game:RevealStage()
   if self.phase == GamePhases.REVEAL then
-  self:revealAllCards()
-  self.phase = GamePhases.END
-  self.revealTimer = 0
+    self:revealAllCards()
+    print("Cards revealed")
   end
 end
 
 function Game:update(dt)
-  if self.phase == GamePhases.REVEAL then
-    self.revealTimer = self.revealTimer + dt
-    if self.revealTimer > 2 then  -- 2 seconds delay to see the cards
+  if self.phase == "intermission" then
+    self.timer = self.timer + dt
+    if self.timer > 1.5 then  -- intermission lasts 1.5 seconds
+      self.phase = "reveal"
+      self.timer = 0
+      self:RevealStage()  -- flip cards now
+    end
+  elseif self.phase == "ai" then
+    self.timer = self.timer + dt
+    if self.timer > 2 then  -- intermission lasts 1.5 seconds
+      self:aiSubmit()
+      self.phase = "intermission"
+      self.timer = 0
+  end
+  
+  elseif self.phase == "reveal" then
+    self.timer = self.timer + dt
+    if self.timer > 3 then  -- allow 2 seconds to see revealed cards
       self:scorePoints()
       self:checkWin()
       self.turn = self.turn + 1
+
       for _, player in ipairs(self.players) do
         player:drawCard()
         player.mana = self.turn
       end
-      self.phase = GamePhases.PLAYER
-      self.revealTimer = 0
+
+      self.phase = "player"
+      self.timer = 0
     end
   end
 end
 
 function Game:scorePoints()
-  print("tallying up points")
-    for i, loc in ipairs(self.locations) do
+  print("Tallying up points for this round...")
+  for i, loc in ipairs(self.locations) do
     local p1Plays = self.players[1].stagedPlays[i]
     local p2Plays = self.players[2].stagedPlays[i]
     local power1, power2 = loc:resolveTurn(p1Plays, p2Plays)
 
     local diff = math.abs(power1 - power2)
+    local locationName = loc.name
+
     if power1 > power2 then
       self.players[1].points = self.players[1].points + diff
+      print("Location: " .. locationName .. " - Player 1 (" .. self.players[1].name .. ") wins by " .. diff .. " points")
     elseif power2 > power1 then
       self.players[2].points = self.players[2].points + diff
+      print("Location: " .. locationName .. " - Player 2 (" .. self.players[2].name .. ") wins by " .. diff .. " points")
+    else
+      print("Location: " .. locationName .. " - It's a tie!")
     end
 
     self.players[1].stagedPlays[i] = {}
     self.players[2].stagedPlays[i] = {}
   end
 end
-
 
 function Game:revealAllCards()
   print("revealing all cards")
@@ -129,8 +151,22 @@ end
 
 function Game:draw()
   love.graphics.setColor(0, 0, 0)
+  
   love.graphics.print("Marvelous Snap", 400, 10, 0, 2, 2)
-
+  
+  if self.phase == GamePhases.PLAYER then
+     love.graphics.print("Place your cards!", 700, 800, 0, 2, 2)
+  end
+    if self.phase == GamePhases.AI then
+     love.graphics.print("AI placing...", 700, 800, 0, 2, 2)
+  end
+    if self.phase == GamePhases.INTERMISSION then
+     love.graphics.print("INTERMISSION", 700, 800, 0, 2, 2)
+  end
+    if self.phase == GamePhases.REVEAL then
+     love.graphics.print("REVEALING", 700, 800, 0, 2, 2)
+  end
+  
   for i, player in ipairs(self.players) do
     player:drawHand(i)
   end

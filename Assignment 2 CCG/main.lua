@@ -19,6 +19,7 @@ submitButton = {
 }
 
 
+
 function love.load()
   math.randomseed(os.time())
   local p1 = Player:new("You")
@@ -29,6 +30,14 @@ function love.load()
   game:startTurn()
 end
 
+function love.update(dt)
+  
+  if game and game.update then
+    game:update(dt)
+  end
+end
+
+
 function love.mousepressed(x, y, button)
   if button == 1 then
      -- Check if Submit button was clicked
@@ -38,22 +47,10 @@ function love.mousepressed(x, y, button)
       if game.phase == "player" then
         print("game phase: PLAYER")
         game:playerSubmit()
-      elseif game.phase == "ai" then
-        print("game phase: AI")
-        game:aiSubmit()
-      elseif game.phase == "intermission" then
-        
-        --nothing
-        print("game phase: INTERMISSION")
-        game.phase = "reveal"
-      elseif game.phase == "reveal" then
-        print("game phase: REVEALSTAGE")
-        game:RevealStage()
-        
       end
-
-      return
     end
+    
+    if game.phase == "player" then
     for _, card in ipairs(game.players[1].hand) do
       if x > card.x and x < card.x + 100 and y > card.y and y < card.y + 150 then
         draggedCard = card
@@ -61,9 +58,11 @@ function love.mousepressed(x, y, button)
         draggedCard.position = ml
         break
       end
+      end
     end
   end
 end
+
 
 function love.mousereleased(x, y, button)
   if button == 1 and draggedCard and game.phase == "player" then
