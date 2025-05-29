@@ -17,6 +17,7 @@ function Card:new(name, cost, power, text)
   card.x = 0
   card.y = 0
   card.flipped = false  
+  card.effectActivated = false
 
   return card
 end
@@ -79,4 +80,18 @@ function Card:draw()
   -- Restore previous font
   love.graphics.setFont(prevFont)
 end
+
+function Card:createCardCopy()
+
+  local copy = Card:new(self.name, self.cost, self.power, self.text)
+
+
+  copy.onReveal = self.onReveal
+  copy.onDiscard = self.onDiscard
+  copy.onEndTurn = self.onEndTurn
+ 
+
+  return copy
+end
+
 return Card

@@ -26,8 +26,10 @@ function Location:draw(index, staged1, staged2)
 
   -- Centered location name
   love.graphics.setColor(0, 0, 0)
+  local prevFont = love.graphics.getFont()
   love.graphics.setFont(love.graphics.newFont(14))
   love.graphics.printf(self.name, x, y + 75, 200, "center")
+  love.graphics.setFont(prevFont)
 
   -- Power calculations
   local function totalPower(cards)
@@ -41,12 +43,12 @@ function Location:draw(index, staged1, staged2)
 
   -- Display inside box: top for AI, bottom for Player
   if game.phase == "reveal" then
-  love.graphics.printf("P2: " .. p2Power, x + 10, y + 30, 180, "center")   -- AI power
+  love.graphics.printf("OPPONENT: " .. p2Power, x + 10, y + 30, 180, "center")   -- AI power
   else
-  love.graphics.printf("P2: " .. 0, x + 10, y + 30, 180, "center")   -- AI power
+  love.graphics.printf("OPPONENT: " .. 0, x + 10, y + 30, 180, "center")   -- AI power
   end
 
-  love.graphics.printf("P1: " .. p1Power, x + 10, y + 120, 180, "center")  -- Player power
+  love.graphics.printf("YOU: " .. p1Power, x + 10, y + 120, 180, "center")  -- Player power
 
   -- Draw cards
   local function drawGrid(cards, playerIndex)

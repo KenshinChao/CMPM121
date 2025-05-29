@@ -5,8 +5,8 @@ return {
     cost = 1,
     power = 1,
     text = [[Vanilla]],
-    effect = function(self, game, playerIndex, locationIndex)
-      -- TODO: Implement effect logic here
+    onReveal = function(self, game, playerIndex, locationIndex)
+      self.effectActivated = true
     end
   },
 
@@ -15,8 +15,8 @@ return {
     cost = 3,
     power = 5,
     text = [[Vanilla]],
-    effect = function(self, game, playerIndex, locationIndex)
-      -- TODO: Implement effect logic here
+    onReveal = function(self, game, playerIndex, locationIndex)
+      self.effectActivated = true
     end
   },
 
@@ -25,18 +25,25 @@ return {
     cost = 6,
     power = 12,
     text = [[Vanilla]],
-    effect = function(self, game, playerIndex, locationIndex)
-      -- TODO: Implement effect logic here
+    onReveal = function(self, game, playerIndex, locationIndex)
+      self.effectActivated = true
     end
   },
 
   {
     name = "Ares",
-    cost = 5,
-    power = 8,
+    cost = 1,
+    power = 2,
     text = [[When Revealed: Gain +2 power for each enemy card here.]],
-    effect = function(self, game, playerIndex, locationIndex)
-      -- TODO: Implement effect logic here
+    onReveal = function(self, game, playerIndex, locationIndex)
+      local opponentIndex = (playerIndex == 1) and 2 or 1
+      local enemyCards = game.players[opponentIndex].stagedPlays[locationIndex] or {}
+      local bonusPower = 0
+      for _, card in ipairs(enemyCards) do
+        bonusPower = bonusPower + 2
+      end
+      self.power = self.power + bonusPower
+      self.effectActivated = true
     end
   },
 
@@ -45,8 +52,19 @@ return {
     cost = 5,
     power = 7,
     text = [[When Revealed: Discard your other cards here, gain +2 power for each discarded.]],
-    effect = function(self, game, playerIndex, locationIndex)
-      -- TODO: Implement effect logic here
+    onReveal = function(self, game, playerIndex, locationIndex)
+      local staged = game.players[playerIndex].stagedPlays[locationIndex]
+      local discardCount = 0
+      for i = #staged, 1, -1 do
+        local card = staged[i]
+        if card ~= self then
+          table.remove(staged, i)
+          table.insert(game.players[playerIndex].discard, card)
+          discardCount = discardCount + 1
+        end
+      end
+      self.power = self.power + discardCount * 2
+      self.effectActivated = true
     end
   },
 
@@ -55,8 +73,11 @@ return {
     cost = 3,
     power = 6,
     text = [[When Revealed: Both players draw a card.]],
-    effect = function(self, game, playerIndex, locationIndex)
-      -- TODO: Implement effect logic here
+    onReveal = function(self, game, playerIndex, locationIndex)
+      for _, player in ipairs(game.players) do
+        player:drawCard()
+      end
+      self.effectActivated = true
     end
   },
 
@@ -65,8 +86,16 @@ return {
     cost = 4,
     power = 4,
     text = [[When Revealed: Gain +2 power for each of your other cards here.]],
-    effect = function(self, game, playerIndex, locationIndex)
-      -- TODO: Implement effect logic here
+    onReveal = function(self, game, playerIndex, locationIndex)
+      local staged = game.players[playerIndex].stagedPlays[locationIndex] or {}
+      local bonusPower = 0
+      for _, card in ipairs(staged) do
+        if card ~= self then
+          bonusPower = bonusPower + 2
+        end
+      end
+      self.power = self.power + bonusPower
+      self.effectActivated = true
     end
   },
 
@@ -75,8 +104,12 @@ return {
     cost = 4,
     power = 5,
     text = [[Add two copies to your hand when this card is discarded.]],
-    effect = function(self, game, playerIndex, locationIndex)
-      -- TODO: Implement effect logic here
+    onDiscard = function(self, game, playerIndex)
+      local copy1 = self:createCardCopy()  
+      local copy2 = self:createCardCopy()  
+      table.insert(game.players[playerIndex].hand, copy1)
+      table.insert(game.players[playerIndex].hand, copy2)
+      self.effectActivated = true
     end
   },
 
@@ -85,48 +118,98 @@ return {
     cost = 5,
     power = 8,
     text = [[When Revealed: Add a copy with +1 power to your hand.]],
-    effect = function(self, game, playerIndex, locationIndex)
-      -- TODO: Implement effect logic here
-    end
+    onReveal = function(self, game, playerIndex, locationIndex)
+
+    local copy = self:createCardCopy() 
+
+   
+    copy.power = copy.power + 1
+
+  
+    table.insert(game.players[playerIndex].hand, copy)
+    self.effectActivated = true
+ 
+   
+  end
   },
 
   {
     name = "Sword of Damocles",
-    cost = 4,
-    power = 8,
-    text = [[End of Turn: Loses 1 power if not winning this location.]],
-    effect = function(self, game, playerIndex, locationIndex)
-      -- TODO: Implement effect logic here
-    end
-  },
-
-  {
-    name = "Athena",
     cost = 2,
-    power = 3,
-    text = [[Gain +1 power when you play another card here.]],
-    effect = function(self, game, playerIndex, locationIndex)
-      -- TODO: Implement effect logic here
+    power = 5,
+    text = [[End of Turn: Loses 1 power if not winning this location.]],
+    onEndTurn = function(self, game, playerIndex, locationIndex)
+      local loc = game.locations[locationIndex]
+      local p1Power, p2Power = loc:resolveTurn(game.players[1].stagedPlays[locationIndex], game.players[2].stagedPlays[locationIndex])
+      local ownerPower = (playerIndex == 1) and p1Power or p2Power
+      local opponentPower = (playerIndex == 1) and p2Power or p1Power
+
+      if ownerPower <= opponentPower then
+        self.power = math.max(0, self.power - 1)
+      end
+      self.effectActivated = true
     end
   },
 
   {
     name = "Persephone",
-    cost = 3,
+    cost = 2,
     power = 7,
     text = [[When Revealed: Discard the lowest power card in your hand.]],
-    effect = function(self, game, playerIndex, locationIndex)
-      -- TODO: Implement effect logic here
+    onReveal = function(self, game, playerIndex, locationIndex)
+      local hand = game.players[playerIndex].hand
+      if #hand == 0 then return end
+      local lowestIndex = 1
+      local lowestPower = hand[1].power
+      for i, card in ipairs(hand) do
+        if card.power < lowestPower then
+          lowestPower = card.power
+          lowestIndex = i
+        end
+      end
+      local discarded = table.remove(hand, lowestIndex)
+      table.insert(game.players[playerIndex].discard, discarded)
+      self.effectActivated = true
     end
   },
+  {
+    name = "Hades",
+    cost = 3,
+    power = 7,
+    text = [[When Revealed: Gain +2 power for each card in your discard pile.]],
+    onReveal = function(self, game, playerIndex, locationIndex)
 
+    local player = game.players[playerIndex]
+
+  
+    local discardCount = #player.discard 
+
+
+    local bonusPower = discardCount * 2
+    self.power = self.power + bonusPower
+
+
+    self.effectActivated = true
+    end
+  },
   {
     name = "Nyx",
     cost = 4,
     power = 5,
     text = [[When Revealed: Discards your other cards here, and their power to this card.]],
-    effect = function(self, game, playerIndex, locationIndex)
-      -- TODO: Implement effect logic here
+    onReveal = function(self, game, playerIndex, locationIndex)
+      local staged = game.players[playerIndex].stagedPlays[locationIndex]
+      local totalPower = 0
+      for i = #staged, 1, -1 do
+        local card = staged[i]
+        if card ~= self then
+          totalPower = totalPower + card.power
+          table.remove(staged, i)
+          table.insert(game.players[playerIndex].discard, card)
+        end
+      end
+      self.power = self.power + totalPower
+      self.effectActivated = true
     end
   },
 
@@ -135,8 +218,16 @@ return {
     cost = 8,
     power = 13,
     text = [[End of Turn: Discard this.]],
-    effect = function(self, game, playerIndex, locationIndex)
-      -- TODO: Implement effect logic here
+    onEndTurn = function(self, game, playerIndex, locationIndex)
+      local staged = game.players[playerIndex].stagedPlays[locationIndex]
+      for i = #staged, 1, -1 do
+        if staged[i] == self then
+          table.remove(staged, i)
+          table.insert(game.players[playerIndex].discard, self)
+          break
+        end
+      end
+      self.effectActivated = true
     end
   }
 }
