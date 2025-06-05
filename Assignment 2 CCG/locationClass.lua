@@ -11,7 +11,7 @@ function Location:new(name)
   return location
 end
 
-function Location:draw(index, staged1, staged2)
+function Location:draw(index, staged1, staged2, game)
   local screenWidth = love.graphics.getWidth()
   local spacing = screenWidth / 4
   local x = spacing * index - 100
@@ -43,9 +43,9 @@ function Location:draw(index, staged1, staged2)
 
   -- Display inside box: top for AI, bottom for Player
   if game.phase == "reveal" then
-  love.graphics.printf("OPPONENT: " .. p2Power, x + 10, y + 30, 180, "center")   -- AI power
+    love.graphics.printf("OPPONENT: " .. p2Power, x + 10, y + 30, 180, "center")   -- AI power
   else
-  love.graphics.printf("OPPONENT: " .. 0, x + 10, y + 30, 180, "center")   -- AI power
+    love.graphics.printf("OPPONENT: " .. 0, x + 10, y + 30, 180, "center")   -- AI power
   end
 
   love.graphics.printf("YOU: " .. p1Power, x + 10, y + 120, 180, "center")  -- Player power
