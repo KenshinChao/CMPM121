@@ -9,6 +9,7 @@ require "locationClass"
 require "player"
 
 draggedCard = nil
+local inspectingCard = nil  -- Holds the card that is being inspected
 
 -- Define buttons
 submitButton = {
@@ -31,7 +32,7 @@ local json = require("dkjson")
 
 -- Game state flag
 local isTitleScreen = true
-local game
+local game = nil
 
 function love.load()
   math.randomseed(os.time())
@@ -56,7 +57,8 @@ function love.mousepressed(x, y, button)
     end
 
     -- Game screen: Submit button click
-    if not isTitleScreen then
+    
+    if not isTitleScreen and game then
       if x > submitButton.x and x < submitButton.x + submitButton.width and
          y > submitButton.y and y < submitButton.y + submitButton.height then
         if game.phase == "player" and game.winner == "" then
@@ -67,7 +69,7 @@ function love.mousepressed(x, y, button)
     end
 
     -- Game screen: Card drag and drop
-    if not isTitleScreen and game.phase == "player" and game.winner == "" then
+    if not isTitleScreen and game and game.phase == "player" and game.winner == "" then
       for _, card in ipairs(game.players[1].hand) do
         if x > card.x and x < card.x + 100 and y > card.y and y < card.y + 150 then
           draggedCard = card
@@ -75,6 +77,36 @@ function love.mousepressed(x, y, button)
         end
       end
     end
+    
+    if not isTitleScreen and game and game.winner == "" then
+      for _, card in ipairs(game.players[1].hand) do
+        if x > card.x and x < card.x + 100 and y > card.y and y < card.y + 150 then
+          inspectingCard = card  
+          break
+        end
+      end
+    end
+    
+    if not inspectingCard and game then 
+        for locationIndex, location in ipairs(game.locations) do
+          for _, card in ipairs(game.players[1].stagedPlays[locationIndex] or {}) do
+            if not card.flipped and x > card.x and x < card.x + 100 and y > card.y and y < card.y + 150 then
+              inspectingCard = card  
+              break
+            end
+          end
+          
+          for _, card in ipairs(game.players[2].stagedPlays[locationIndex] or {}) do
+            if not card.flipped and x > card.x and x < card.x + 100 and y > card.y and y < card.y + 150 then
+              inspectingCard = card (enlarged)
+              break
+            end
+          end
+          
+          
+          if inspectingCard then break end
+        end
+      end
   end
 end
 
@@ -95,10 +127,14 @@ function love.mousemoved(x, y, dx, dy)
     draggedCard.x = x - 35
     draggedCard.y = y - 50
   end
+  if inspectingCard then
+    inspectingCard = nil
+  end
+  
 end
 
 function love.draw()
-  love.graphics.clear(1, 1, 1)  
+  love.graphics.clear(1, 1, 1)  -- RGB for white background
   
   if isTitleScreen then
     -- Title Screen
@@ -108,7 +144,7 @@ function love.draw()
     love.graphics.printf("Marvelous Snap", 0, 200, 960, "center")
     love.graphics.setFont(prevFont)  
 
-   --play button
+    -- Start Game button
     love.graphics.setColor(0.2, 0.6, 0.9)
     love.graphics.rectangle("fill", startButton.x, startButton.y, startButton.width, startButton.height, 10)
     love.graphics.setColor(1, 1, 1)
@@ -146,6 +182,39 @@ function love.draw()
     -- Draw dragged card if present
     if draggedCard then
       draggedCard:draw()
+    end
+
+    -- Display the inspected card (enlarged version)
+    if inspectingCard then
+      local cardWidth, cardHeight = 200, 300  -- Enlarged card size
+
+      -- Draw a semi-transparent background for inspection mode
+      love.graphics.setColor(0, 0, 0, 0.7)
+      love.graphics.rectangle("fill", 100, 300, 760, 300, 12, 12)  -- Background for inspection
+
+      -- Set text color and draw card details
+      love.graphics.setColor(1, 1, 1)
+      love.graphics.setFont(love.graphics.newFont(24))
+      love.graphics.printf("Inspecting: " .. inspectingCard.name, 100, 320, 760, "center")
+
+      love.graphics.setFont(love.graphics.newFont(18))
+      love.graphics.printf("Cost: " .. inspectingCard.cost, 100, 360, 760, "center")
+      love.graphics.printf("Power: " .. inspectingCard.power, 100, 390, 760, "center")
+      love.graphics.printf("Description: " .. inspectingCard.text, 100, 420, 760, "center")
+
+      -- Optionally add a close button
+      love.graphics.setColor(0.8, 0.2, 0.2)  -- Red close button
+      love.graphics.rectangle("fill", 850, 350, 100, 50, 10)
+      love.graphics.setColor(1, 1, 1)
+      love.graphics.printf("Close", 850, 375, 100, "center")
+
+      -- Check if player clicks the close button
+      local mx, my = love.mouse.getPosition()
+      if love.mousepressed then
+        if mx > 850 and mx < 950 and my > 350 and my < 400 then
+          inspectingCard = nil  -- Close the inspection when the close button is clicked
+        end
+      end
     end
   end
 end

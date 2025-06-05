@@ -13,25 +13,29 @@ end
 
 function Location:draw(index, staged1, staged2, game)
   local screenWidth = love.graphics.getWidth()
-  local spacing = screenWidth / 4
-  local x = spacing * index - 100
-  local y = 300
+  local totalWidth = 3 * 200  -- 3 locations, each 200px wide
+  local startX = (screenWidth - totalWidth) / 2  
+  
+ 
+  local x = startX + (index - 1) * 200  -- Spread locations horizontally
+  local y = love.graphics.getHeight() / 2 - 50  -- Vertically center the locations (adjust as needed)
   self.x = x
   self.y = y
 
+  local locationHeight = 100  
   love.graphics.setColor(0.85, 0.9, 1)
-  love.graphics.rectangle("fill", x, y, 200, 150, 12, 12)
+  love.graphics.rectangle("fill", x, y, 200, locationHeight, 12, 12)  
   love.graphics.setColor(0, 0, 0)
-  love.graphics.rectangle("line", x, y, 200, 150, 12, 12)
+  love.graphics.rectangle("line", x, y, 200, locationHeight, 12, 12) 
 
-  -- Centered location name
+  --name
   love.graphics.setColor(0, 0, 0)
   local prevFont = love.graphics.getFont()
   love.graphics.setFont(love.graphics.newFont(14))
-  love.graphics.printf(self.name, x, y + 75, 200, "center")
+  love.graphics.printf(self.name, x, y + locationHeight / 2 - 40, 200, "center")  
   love.graphics.setFont(prevFont)
 
-  -- Power calculations
+ 
   local function totalPower(cards)
     local sum = 0
     for _, c in ipairs(cards) do sum = sum + c.power end
@@ -43,12 +47,12 @@ function Location:draw(index, staged1, staged2, game)
 
   -- Display inside box: top for AI, bottom for Player
   if game.phase == "reveal" then
-    love.graphics.printf("OPPONENT: " .. p2Power, x + 10, y + 30, 180, "center")   -- AI power
+    love.graphics.printf("OPPONENT: " .. p2Power, x + 10, y + 30, 180, "center")  -- AI power
   else
-    love.graphics.printf("OPPONENT: " .. 0, x + 10, y + 30, 180, "center")   -- AI power
+    love.graphics.printf("OPPONENT: " .. 0, x + 10, y + 30, 180, "center")  -- AI power
   end
 
-  love.graphics.printf("YOU: " .. p1Power, x + 10, y + 120, 180, "center")  -- Player power
+  love.graphics.printf("YOU: " .. p1Power, x + 10, y + 70, 180, "center")  -- Player power
 
   -- Draw cards
   local function drawGrid(cards, playerIndex)
@@ -57,8 +61,8 @@ function Location:draw(index, staged1, staged2, game)
       local row = math.floor((i - 1) / 2)
       local cardX = x + 10 + col * 90
       local cardY = (playerIndex == 1)
-        and (y + 160 + row * 140)
-        or  (y - 160 - row * 140)
+        and (y + locationHeight + row * 140 + 5)  -- Positioning below the location
+        or  (y + locationHeight - 250 - row * 140)  -- Positioning above for AI
 
       card.x = cardX
       card.y = cardY

@@ -68,16 +68,15 @@ function Game:aiSubmit()
     return
   end
 
-  -- Pick random affordable card
+
   local chosen = affordableCards[math.random(#affordableCards)]
 
-  -- Pick random location (1 to 3)
+
   local locationIndex = math.random(1, #self.locations)
 
   chosen.flipped = true
   ai:stageCard(locationIndex, chosen)
 
-  -- Remove chosen card from hand
   for i, c in ipairs(ai.hand) do
     if c == chosen then
       table.remove(ai.hand, i)
@@ -131,6 +130,21 @@ function Game:update(dt)
     end
   elseif self.phase == GamePhases.END then
     if not self:checkWin() then
+      -- Check for leftover points if no player has won
+      if totalPointsAwarded == 0 then
+        print("No winner this round, checking leftover points...")
+        
+        -- If there's no winner, the player with the leftover power should get points
+        if self.players[1].points > self.players[2].points then
+          local pointsToAward = self.players[1].points - self.players[2].points
+          self.players[1].points = self.players[1].points + pointsToAward
+          print(self.players[1].name .. " has leftover points and gains " .. pointsToAward .. " more points!")
+        elseif self.players[2].points > self.players[1].points then
+          local pointsToAward = self.players[2].points - self.players[1].points
+          self.players[2].points = self.players[2].points + pointsToAward
+          print(self.players[2].name .. " has leftover points and gains " .. pointsToAward .. " more points!")
+        end
+      end
       self.timer = self.timer + dt
       if self.timer > 2 then
         self.phase = GamePhases.PLAYER
@@ -298,7 +312,7 @@ function Game:restart()
     player.cards = player:loadCardsFromJSON("data/card_list.json")
     
     player.deck = player:generateDeck(player.cards)
-    for _ = 1, 3 do
+    for _ = 1, 2 do
       player:drawCard()
     end
   end
