@@ -24,3 +24,5 @@ Person 3: Suggested decentralizing the main functions.
 Adjustment: Categorized more functions to their respective files that are related to the class. 
 
 I think I did well in separating the logic like a graph. The players turn, round starts, ai places, reveal, end. I think that it made the code more managable, readable, and easier to code as I went on. If there was something wrong in one of those phases, I can look at the specific phase function and figure it out. I also tried making more smaller functions so that It can be more readable and condensed, like player:drawCard instead of making a table.insert call. If I could do it all over again I'd probably make more smaller functions and add pictures.
+
+
